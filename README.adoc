@@ -29,10 +29,26 @@ ifndef::env-github[]
 :no: icon:times[]
 endif::[]
 
+This repository is my playground to keep all my work about installing and configuring a fleet of clusters using ZTP.
+
+
 // Create the Table of contents here
 toc::[]
 
 == Introduction
 
-This repository is my playground to keep all my work about installing and configuring a fleet of clusters using ZTP.
+OpenShift Zero Touch Provisioning (ZTP) automates deploying and managing OpenShift clusters with minimal manual effort. It uses tools like Red Hat ACM and OpenShift GitOps for hardware discovery, installation, and configuration, enabling consistent, scalable deployments while reducing overhead and errors.
+
+
+
+
+
+== Useful Links
+
+* Documentation - https://docs.openshift.com/container-platform/4.16/edge_computing/ztp-deploying-far-edge-clusters-at-scale.html[Challenges of the network far edge]: This is the main explanation of GitOps ZTP provisioning.
+* Documentation - https://docs.openshift.com/container-platform/4.16/scalability_and_performance/telco_ref_design_specs/ran/telco-ran-ref-design-spec.html[Telco RAN DU 4.16 reference design overview] to configure OCP on commodity hardware to host telco RAN DU workloads.
+* Documentation - https://docs.openshift.com/container-platform/4.16/edge_computing/policygentemplate_for_ztp/ztp-configuring-managed-clusters-policies.html[Configuring managed cluster policies by using PolicyGenTemplate resources] - Deprecated.
+* Documentation - https://docs.openshift.com/container-platform/4.16/edge_computing/policygenerator_for_ztp/ztp-configuring-managed-clusters-policygenerator.html[Configuring managed cluster policies by using PolicyGenerator resources] - Tech Preview.
+
+* Workshop - https://labs.sysdeseng.com/5g-ran-deployments-on-ocp-lab/4.16/index.html[Red Hat Lab 5G RAN Deployments on OpenShift].
 
