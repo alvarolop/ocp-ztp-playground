@@ -1,0 +1,28 @@
+---
+apiVersion: operator.open-cluster-management.io/v1
+kind: MultiClusterHub
+metadata:
+  name: multiclusterhub
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    # installer.open-cluster-management.io/mce-subscription-spec: '{"source": "my-mirror-catalog-source"}' # Only if disconnected
+spec:
+  availabilityConfig: "Basic" # By default, "High".
+  # disableHubSelfManagement: false
+  # disableUpdateClusterImageSets: false
+  # imagePullSecret: "" # Only to use with k8s vanilla
+  # overrides:
+  #   components:
+  #   - name: console
+  #     enabled: true
+  #   - name: cluster-backup
+  #     enabled: true
+  #   - name: managedserviceaccount-preview
+  #     enabled: true
+  #   imagePullPolicy: Always
+  # nodeSelector:
+  #   node-role.kubernetes.io/infra: ""
+  tolerations:
+    - key: node-role.kubernetes.io/infra
+      effect: NoSchedule
+      operator: Exists

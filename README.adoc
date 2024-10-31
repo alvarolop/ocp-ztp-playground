@@ -2,7 +2,7 @@
 Álvaro López Medina <alopezme@redhat.com>
 v1.0, 2024-10
 // Metadata
-:description: This repository...
+:description: This repository is my playground to keep all my work about installing and configuring a fleet of clusters using ZTP.
 :keywords: openshift, ztp, installation, baremetal, red hat
 // Create TOC wherever needed
 :toc: macro
@@ -38,6 +38,33 @@ toc::[]
 == Introduction
 
 OpenShift Zero Touch Provisioning (ZTP) automates deploying and managing OpenShift clusters with minimal manual effort. It uses tools like Red Hat ACM and OpenShift GitOps for hardware discovery, installation, and configuration, enabling consistent, scalable deployments while reducing overhead and errors.
+
+The features that ZTP can provide can be categorized in two:
+
+* *Baremetal cluster provisioning* via a straightforward site-config.yaml file, making the initial setup seamless.
+* *Day 2 configuration* with PolicyGenTemplates, facilitating consistent post-deployment management and updates.
+
+
+
+== Installation
+
+To successfully install Zero-Touch Provisioning (ZTP) for managing edge clusters in OpenShift, there are three essential components that need to be installed:
+
+* *GitOps*: Uses Git workflows to automate and maintain cluster configurations, ensuring clusters match the desired state defined in Git.
+
+* *Advanced Cluster Management (ACM)*: ACM acts as the central point for managing multiple clusters, providing visibility, governance, and control over edge deployments.
+
+* *Topology-Aware Lifecycle Manager (TALM)*: TALM is crucial for managing the lifecycle of clusters, allowing for topology-aware updates and better coordination across the edge environment.
+
+
+We are going to use GitOps to also install ACM and TALM. For that reason, please, access this repository https://github.com/alvarolop/ocp-gitops-playground[alvarolop/ocp-gitops-playground] and install GitOps using that automation. After that, create the following application:
+
+
+[source, bash]
+----
+oc apply -f application-ztp-installation.yaml
+----
+
 
 
 
