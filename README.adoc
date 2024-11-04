@@ -39,14 +39,18 @@ toc::[]
 
 OpenShift Zero Touch Provisioning (ZTP) automates deploying and managing OpenShift clusters with minimal manual effort. It uses tools like Red Hat ACM and OpenShift GitOps for hardware discovery, installation, and configuration, enabling consistent, scalable deployments while reducing overhead and errors.
 
-The features that ZTP can provide can be categorized in two:
+ZTP offers a comprehensive solution for managing clusters throughout their entire lifecycle—from installation to configuration and upgrades:
 
 * *Baremetal cluster provisioning* via a straightforward site-config.yaml file, making the initial setup seamless.
+
 * *Day 2 configuration* with PolicyGenTemplates, facilitating consistent post-deployment management and updates.
 
+* *Software lifecycle management for multiple clusters* with the Topology-Aware Lifecycle Manager (TALM), enabling efficient, topology-aware upgrades and maintenance.
 
 
-== Installation
+
+
+== ZTP Hub Installation
 
 To successfully install Zero-Touch Provisioning (ZTP) for managing edge clusters in OpenShift, there are three essential components that need to be installed:
 
@@ -63,6 +67,72 @@ We are going to use GitOps to also install ACM and TALM. For that reason, please
 [source, bash]
 ----
 oc apply -f application-ztp-installation.yaml
+----
+
+
+== Sites Baremetal node installation
+
+
+=== Step 0: AWS credentials
+
+First, you will need to create an `aws-env-vars` file and fill the following variables:
+
+[source, bash]
+----
+# CHECK VARIABLE VALUES ARE BETWEEN DOUBLE QUOTES!
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+export AWS_DEFAULT_REGION=""
+----
+
+Then, you just need to source it to use the variables in the Ansible Playbook:
+
+[source, bash]
+----
+source ./aws-env-vars
+----
+
+=== Step 1: Create an SSH Key pair
+
+
+[source, bash]
+----
+ansible-playbook -vv ansible/aws_keypair_create.yml
+----
+
+
+=== Step 2: Deploy an instance on AWS
+
+Now, create a baremetal instance on AWS using the following Ansible Playbook:
+
+[source, bash]
+----
+ansible-playbook -vv ansible/aws_ec2_create_vm.yml
+----
+
+You should be able to connect to your instance using a command like the following:
+
+[source, bash]
+----
+ssh -i ~/.ssh/aws-ztp-key.pem ec2-userr@$PublicDnsName
+----
+
+If you forgot the DNS name, you can use the following command:
+
+[source, bash]
+----
+aws ec2 describe-instances | jq -r '.Reservations[].Instances[] | "\(.Tags[] | select(.Key == "Name").Value) \(.State.Name) \(.PublicDnsName)"' 
+----
+
+=== Step 3: Install all the related configuration on the RHEL 9 node
+
+Now, it is time to install all the important packages inside the RHEL node. 
+
+First, copy the `$PublicDnsName` to the `inventory` file and then execute the following Ansible playbook:
+
+[source, bash]
+----
+ansible-playbook -vv ansible/aws_ec2_configure_vm.yml
 ----
 
 
