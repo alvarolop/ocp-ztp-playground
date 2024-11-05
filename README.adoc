@@ -66,7 +66,7 @@ We are going to use GitOps to also install ACM and TALM. For that reason, please
 
 [source, bash]
 ----
-oc apply -f application-ztp-installation.yaml
+oc apply -f application-ztp-infra.yaml
 ----
 
 
@@ -114,7 +114,7 @@ You should be able to connect to your instance using a command like the followin
 
 [source, bash]
 ----
-ssh -i ~/.ssh/aws-ztp-key.pem ec2-userr@$PublicDnsName
+ssh -i ~/.ssh/aws-ztp-key.pem ec2-user@$PublicDnsName
 ----
 
 If you forgot the DNS name, you can use the following command:
@@ -137,7 +137,13 @@ ansible-playbook -vv ansible/aws_ec2_configure_vm.yml
 
 
 
+== Testing deployment
 
+
+[source, bash]
+----
+curl -k https://localhost:9000/redfish/v1/Systems/local
+----
 
 
 == Useful Links
