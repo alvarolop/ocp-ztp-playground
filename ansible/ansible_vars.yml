@@ -1,0 +1,47 @@
+###########
+# SSH Keys
+###########
+key_name: my-ztp-key  # Name of the key pair to create
+key_path: ~/.ssh/aws-ztp-key.pem  # Local path where the private key will be stored
+
+###########
+# EC2 Configuration
+###########
+
+vpc_cidr: "10.1.0.0/16"        # CIDR for VPC
+subnet_cidr: "10.1.1.0/24"     # CIDR for subnet
+availability_zone: eu-west-1a  # Choose an availability zone in eu-west-1
+region: eu-west-1              # Your preferred AWS region
+
+
+###########
+# VM Network config
+###########
+
+bridge_name: br0
+ip_address: 192.168.1.100
+gateway: 192.168.1.1
+dns_servers: 8.8.8.8,8.8.4.4
+interface_name: eth0
+
+
+###########
+# EC2 Instance
+###########
+
+# https://aws.amazon.com/ec2/instance-types/
+# https://aws.amazon.com/ec2/pricing/on-demand/
+instance_type: c5n.metal        # Choose a metal instance type (4.392€/h)
+volume_size: 1000              # EBS volume size (adjust as per your needs)
+device_name: /dev/sda1
+ami_id: ami-07d4917b6f95f5c2a  # RHEL 9 AMI for the eu-west-1 region
+
+###########
+# Component names
+###########
+vpc_name: my-ztp-vpc
+subnet_name: my-ztp-subnet
+security_group_name: my-ztp-sg
+igw_name: my-ztp-igw
+rtb_name: my-ztp-rtb
+instance_name: ztp-rhel

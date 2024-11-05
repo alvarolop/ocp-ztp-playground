@@ -1,0 +1,194 @@
+---
+# This Ansible playbook automates the creation of an EC2 instance with NVIDIA GPU in AWS eu-west-1.
+# The playbook will:
+# 1. Create a new VPC (Virtual Private Cloud) to isolate the resources.
+# 2. Create a subnet within the VPC in a specific availability zone.
+# 3. Creates a security group that allows SSH access (port 22) and Jupyter Notebook access (port 8888).
+# 4. Launch an EC2 instance with GPU (g4dn.xlarge), attach a storage volume, and install RHEL 9.
+# 5. Wait for the instance to become reachable via SSH.
+# 6. Dynamically add the instance to the Ansible inventory.
+# 7. Print out the instance details (IP, ID, etc.) for your reference.
+
+- name: Create an EC2 instance with for ZTP Managed Clusters
+  hosts: ztp
+  become: yes
+  vars_files:
+    - ./ansible_vars.yml
+
+  tasks:
+
+    - name: Ping server
+      ansible.builtin.ping:
+
+
+    #####################
+    # Install and update Packages
+    #####################
+
+    - name: Update all packages
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest
+
+    - name: Add Karmab COPR repository for kcli
+      ansible.builtin.get_url:
+        url: https://copr.fedorainfracloud.org/coprs/karmab/kcli/repo/epel-9/karmab-kcli-epel-9.repo
+        dest: /etc/yum.repos.d/karmab-kcli.repo
+      
+    - name: Install libvirt and related packages
+      ansible.builtin.dnf:
+        name:
+          - libvirt
+          - libvirt-daemon-driver-qemu
+          - qemu-kvm
+          - kcli
+          # - bridge-utils
+        state: present
+
+    - name: Add users to qemu and libvirt groups
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: qemu,libvirt
+        append: yes
+      loop:
+        - "{{ ansible_user_id }}"
+        - "ec2-user"
+
+    - name: Enable and start libvirtd service
+      ansible.builtin.service:
+        name: libvirtd
+        enabled: yes
+        state: started
+
+    - name: Install additional packages
+      ansible.builtin.dnf:
+        name:
+          - bash-completion
+          - vim
+          - jq
+          - tar
+          - git
+          - ipcalc
+          - pip
+        state: present
+
+    - name: Install pyopenssl via pip
+      ansible.builtin.pip:
+        name: pyopenssl
+
+    - name: Download and install oc client
+      ansible.builtin.get_url:
+        url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+        dest: /tmp/openshift-client-linux.tar.gz
+
+    - name: Extract oc client
+      ansible.builtin.unarchive:
+        src: /tmp/openshift-client-linux.tar.gz
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: Download and install kubectl
+      ansible.builtin.get_url:
+        url: https://dl.k8s.io/release/v1.27.0/bin/linux/amd64/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+    #####################
+    # Configure Networks to use AWS VPC
+    #####################
+
+    - name: Create a network bridge using nmcli
+      community.general.nmcli:
+        conn_name: "{{ bridge_name }}"
+        type: bridge
+        ifname: "{{ bridge_name }}"
+        ip4: "{{ ip_address }}/24"
+        gw4: "{{ gateway }}"
+        dns4: "{{ dns_servers }}"
+        state: present
+
+    - name: Add physical interface to the bridge
+      community.general.nmcli:
+        conn_name: "{{ interface_name }}-to-{{ bridge_name }}"
+        type: ethernet
+        slave_type: bridge
+        ifname: "{{ interface_name }}"
+        master: "{{ bridge_name }}"
+        state: present
+
+    - name: Restart network to apply changes
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+
+    - name: Wait for SSH to be available after network restart
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+        delay: 5
+
+
+    # - name: Configure kcli host
+    #   command: kcli create host kvm --name local --pool /var/lib/libvirt/images
+    #   register: kcli_host_result
+    #   changed_when: "'already exists' not in kcli_host_result.stdout"
+
+    # - name: Create VM using kcli
+    #   command: kcli create vm -P memory=2048 -P numcpus=2 -P nets='[{{ bridge_name }}]' vm1
+    #   register: kcli_vm_result
+    #   changed_when: "'already exists' not in kcli_vm_result.stdout"
+
+
+    #####################
+    # Install ksushy 
+    #####################
+
+    - name: Install Ksushy Tool dependencies
+      ansible.builtin.pip:
+        name:
+          - cherrypy
+          - pyopenssl
+        executable: pip3
+
+    - name: Create ksushy service
+      ansible.builtin.command: kcli create sushy-service --ssl --port 9000
+      register: ksushy_creation
+
+    - name: Display ksushy creation output
+      debug:
+        msg: "{{ ksushy_creation.stdout }}"
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
+
+    - name: Enable and start ksushy service
+      ansible.builtin.service:
+        name: ksushy
+        enabled: yes
+        state: started
+      ignore_errors: yes
+
+    # - name: Verify ksushy service is running
+    #   ansible.builtin.service_facts: {}
+
+    # - name: Display ksushy status
+    #   ansible.builtin.debug:
+    #     msg: "Ksushy service is {{ 'running' if services['ksushy.service'].state == 'running' else 'not running' }}"
+
+    - name: Verify port 9000 is being used by ksushy
+      ansible.builtin.shell: "ss -lntp | grep ':9000 '"
+      register: port_status
+      changed_when: false
+
+    - name: Display port 9000 status
+      ansible.builtin.debug:
+        msg: "{{ port_status.stdout }}"
+
+    - name: Verify port 9000 is being used by ksushy
+      ansible.builtin.wait_for:
+        port: 9000
+        state: started
+        timeout: 30
+
+    - name: Display port 9000 status
+      ansible.builtin.debug:
+        msg: "Port 9000 is being used by ksushy."
