@@ -121,7 +121,7 @@ If you forgot the DNS name, you can use the following command:
 
 [source, bash]
 ----
-aws ec2 describe-instances | jq -r '.Reservations[].Instances[] | "\(.Tags[] | select(.Key == "Name").Value) \(.State.Name) \(.PublicDnsName)"' 
+aws ec2 describe-instances | jq -r '.Reservations[].Instances[] | "[\(.State.Name)] \(.Tags[] | select(.Key == "Name").Value) \(.PublicDnsName)"' 
 ----
 
 === Step 3: Install all the related configuration on the RHEL 9 node
