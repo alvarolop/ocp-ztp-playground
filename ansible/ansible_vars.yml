@@ -19,8 +19,8 @@ region: eu-west-1              # Your preferred AWS region
 ###########
 
 bridge_name: br0
-ip_address: 192.168.1.100
-gateway: 192.168.1.1
+ip_address: 10.1.1.130
+gateway: 10.1.1.1
 dns_servers: 8.8.8.8,8.8.4.4
 interface_name: eth0
 

@@ -20,7 +20,6 @@
     - name: Ping server
       ansible.builtin.ping:
 
-
     #####################
     # Install and update Packages
     #####################
@@ -44,6 +43,12 @@
           - kcli
           # - bridge-utils
         state: present
+
+    - name: Configure kcli host
+      ansible.builtin.command: kcli create host kvm -H 127.0.0.1 local
+
+    - name: Configure kcli default storage pool
+      ansible.builtin.command: kcli create pool -p /var/lib/libvirt/images default
 
     - name: Add users to qemu and libvirt groups
       ansible.builtin.user:
@@ -95,6 +100,7 @@
 
     #####################
     # Configure Networks to use AWS VPC
+    # https://blog.christophersmart.com/2020/07/27/how-to-create-linux-bridges-and-open-vswitch-bridges-with-networkmanager/
     #####################
 
     - name: Create a network bridge using nmcli
@@ -102,19 +108,32 @@
         conn_name: "{{ bridge_name }}"
         type: bridge
         ifname: "{{ bridge_name }}"
-        ip4: "{{ ip_address }}/24"
-        gw4: "{{ gateway }}"
-        dns4: "{{ dns_servers }}"
+        # ip4: "{{ ip_address }}/24"
+        # gw4: "{{ gateway }}"
+        # dns4: "{{ dns_servers }}"
+        autoconnect: yes
         state: present
 
-    - name: Add physical interface to the bridge
+    - name: Modify existing Ethernet connection to join bridge
       community.general.nmcli:
-        conn_name: "{{ interface_name }}-to-{{ bridge_name }}"
-        type: ethernet
-        slave_type: bridge
+        conn_name: "System {{ interface_name }}"
         ifname: "{{ interface_name }}"
         master: "{{ bridge_name }}"
+        slave_type: bridge
+        type: ethernet
+        autoconnect: yes
         state: present
+      # ignore_errors: no
+
+    - name: Bring up the bridge
+      community.general.nmcli:
+        conn_name: "{{ bridge_name }}"
+        state: up
+
+    - name: Bring up the bridge slave interface
+      community.general.nmcli:
+        conn_name: "System {{ interface_name }}"
+        state: up
 
     - name: Restart network to apply changes
       ansible.builtin.service:
@@ -125,18 +144,6 @@
       ansible.builtin.wait_for_connection:
         timeout: 300
         delay: 5
-
-
-    # - name: Configure kcli host
-    #   command: kcli create host kvm --name local --pool /var/lib/libvirt/images
-    #   register: kcli_host_result
-    #   changed_when: "'already exists' not in kcli_host_result.stdout"
-
-    # - name: Create VM using kcli
-    #   command: kcli create vm -P memory=2048 -P numcpus=2 -P nets='[{{ bridge_name }}]' vm1
-    #   register: kcli_vm_result
-    #   changed_when: "'already exists' not in kcli_vm_result.stdout"
-
 
     #####################
     # Install ksushy 
@@ -167,13 +174,6 @@
         state: started
       ignore_errors: yes
 
-    # - name: Verify ksushy service is running
-    #   ansible.builtin.service_facts: {}
-
-    # - name: Display ksushy status
-    #   ansible.builtin.debug:
-    #     msg: "Ksushy service is {{ 'running' if services['ksushy.service'].state == 'running' else 'not running' }}"
-
     - name: Verify port 9000 is being used by ksushy
       ansible.builtin.shell: "ss -lntp | grep ':9000 '"
       register: port_status
@@ -192,3 +192,53 @@
     - name: Display port 9000 status
       ansible.builtin.debug:
         msg: "Port 9000 is being used by ksushy."
+
+
+    #####################
+    # Create a testing VM
+    #####################
+
+    - name: Define {{ bridge_name }}-net
+      community.libvirt.virt_net:
+        name: "{{ bridge_name }}-net"
+        autostart: true
+        command: define
+        xml: '{{ lookup("template", "network/br0-net.xml.j2") }}'
+
+    - name: Ensure that {{ bridge_name }}-net network is active
+      community.libvirt.virt_net:
+        name: "{{ bridge_name }}-net"
+        state: active
+
+    - name: Ensure that {{ bridge_name }}-net network and will be started at boot
+      community.libvirt.virt_net:
+        name: "{{ bridge_name }}-net"
+        autostart: true
+
+    - name: List available networks
+      community.libvirt.virt_net:
+        command: list_nets
+
+    - name: Get XML data of a specified network
+      community.libvirt.virt_net:
+        command: get_xml
+        name: "{{ bridge_name }}-net"
+
+    - name: Create vm tahitibob from centos9stream image and forcing memory to be 2G
+      karmab.kcli.kcli_vm:
+        name: testvm
+        state: present
+        image: centos9stream
+        parameters:
+          memory: 2048
+          nets:
+            # - default
+            - name: "{{ bridge_name }}-net" # Attach the VM to the br0 bridge
+              ip: 10.1.1.82
+              mask: 255.255.255.0
+              gateway: 10.1.1.1
+      register: kcli_vm_result
+
+    - name: Print VM values
+      ansible.builtin.debug:
+        var: kcli_vm_result
