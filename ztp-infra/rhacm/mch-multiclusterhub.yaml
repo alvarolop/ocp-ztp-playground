@@ -11,11 +11,10 @@ spec:
   # disableHubSelfManagement: false
   # disableUpdateClusterImageSets: false
   # imagePullSecret: "" # Only to use with k8s vanilla
-  overrides:
-    components:
-    # Check step 3: https://docs.openshift.com/container-platform/4.16/edge_computing/ztp-preparing-the-hub-cluster.html
-    - name: cluster-proxy-addon
-      enabled: false
+  # overrides:
+  #   components:
+  #   - name: console
+  #     enabled: true
   #   - name: cluster-backup
   #     enabled: true
   #   - name: managedserviceaccount-preview
