@@ -69,6 +69,14 @@ We are going to use GitOps to also install ACM and TALM. For that reason, please
 oc apply -f application-ztp-infra.yaml
 ----
 
+Finally, to allow ArgoCD to render the templates provided by ZTP, you can use the following patch:
+
+[source, bash]
+----
+oc patch argocd argocd -n gitops --type=merge \
+--patch-file ztp-infra/argocd-openshift-gitops-patch.json
+----
+
 
 == Sites Baremetal node installation
 
