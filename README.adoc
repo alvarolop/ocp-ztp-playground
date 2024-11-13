@@ -69,12 +69,20 @@ We are going to use GitOps to also install ACM and TALM. For that reason, please
 oc apply -f application-ztp-infra.yaml
 ----
 
-Finally, to allow ArgoCD to render the templates provided by ZTP, you can use the following patch:
+Then, to allow ArgoCD to render the templates provided by ZTP, you can use the following patch:
 
 [source, bash]
 ----
 oc patch argocd argocd -n gitops --type=merge \
 --patch-file ztp-infra/argocd-openshift-gitops-patch.json
+----
+
+Also, you will like to disable the `cluster-proxy-addon` addon from ACM Hub to ensure direct communication between ACM pods in OpenShift and ZTP subnet machines:
+
+[source, bash]
+----
+oc patch multiclusterengines multiclusterengine --type=merge \
+--patch-file ztp-infra/disable-cluster-proxy-addon.json
 ----
 
 
