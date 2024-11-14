@@ -86,6 +86,17 @@ oc patch multiclusterengines multiclusterengine --type=merge \
 ----
 
 
+=== Enabling ACM Observability
+
+After installing all the mandatory components for ZTP, it is also possible to enable ACM Observability component to gather observability events from the managed clusters. This component has several prerequisites that make it difficult [.line-through]#and nasty#, so I have created a post-install script that you can run right after the ZTP installation.
+
+[source, bash]
+----
+./rhacm-obs/install.sh
+----
+
+
+
 == Sites Baremetal node installation
 
 

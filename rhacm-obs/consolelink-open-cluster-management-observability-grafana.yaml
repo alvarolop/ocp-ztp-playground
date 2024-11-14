@@ -1,0 +1,12 @@
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: open-cluster-management-observability-grafana
+spec:
+  href: $GRAFANA_ROUTE
+  location: ApplicationMenu
+  text: ACM Obs - Grafana
+  applicationMenu:
+    section: Observability
+    imageURL: https://img.icons8.com/fluency/256/grafana.png
