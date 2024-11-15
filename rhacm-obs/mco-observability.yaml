@@ -4,8 +4,39 @@ kind: MultiClusterObservability
 metadata:
   name: observability
 spec:
-  observabilityAddonSpec: {}
+  # enableDownsampling: true
+  # observabilityAddonSpec:
+  #   enableMetrics: true
+  #   interval: 300
   storageConfig:
+    # alertmanagerStorageSize: 1Gi
+    # compactStorageSize: 100Gi
     metricObjectStorage:
       name: thanos-object-storage
       key: thanos.yaml
+    # receiveStorageSize: 100Gi
+    # ruleStorageSize: 1Gi
+    # storageClass: gp2
+    # storeStorageSize: 10Gi
+  # advanced:
+  #   retentionConfig:
+  #     blockDuration: 2h
+  #     deleteDelay: 48h
+  #     retentionInLocal: 24h
+  #     retentionResolutionRaw: 365d
+  #     retentionResolution5m: 365d
+  #     retentionResolution1h: 365d
+  #   receive:
+  #     resources:
+  #       limits:
+  #         memory: 4096Gi
+  #     replicas: 3
+  tolerations:
+    - key: node-role.kubernetes.io/infra
+      value: reserved
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/infra
+      value: reserved
+      effect: NoExecute
+  # nodeSelector:
+  #   node-role.kubernetes.io/infra: ""
