@@ -232,3 +232,17 @@ cd multicluster-observability-operator/tools
 ----
 ./generate-dashboard-configmap-yaml.sh "Alvaro - Custom Overview"
 ----
++
+6. Finally, you can promote the dashboard to the production Grafana creating the ConfigMap:
++
+[source, bash]
+----
+oc apply -n open-cluster-management-observability -f alvaro---custom-overview.yaml
+----
++
+7. When you are done, you can delete the dev instance with the following command:
++
+[source, bash]
+----
+./setup-grafana-dev.sh --clean
+----
