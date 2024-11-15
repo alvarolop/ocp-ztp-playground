@@ -190,3 +190,45 @@ curl -k https://localhost:9000/redfish/v1/Systems/local
 
 * Workshop - https://labs.sysdeseng.com/5g-ran-deployments-on-ocp-lab/4.16/index.html[Red Hat Lab 5G RAN Deployments on OpenShift].
 
+
+
+:!sectnums:
+
+== Annex A: Deploy Development Grafana instance
+
+You can design your Grafana dashboard by creating a grafana-dev instance. Follow these steps
+
+1. Clone the upstream repo:
++
+[source, bash]
+----
+git clone https://github.com/stolostron/multicluster-observability-operator.git
+----
++
+2. Change to the tools folder:
++
+[source, bash]
+----
+cd multicluster-observability-operator/tools
+----
++
+3. Deploy Grafana instance:
++
+[source, bash]
+----
+./setup-grafana-dev.sh --deploy
+----
++
+4. Make yourself Grafana admin:
++
+[source, bash]
+----
+./switch-to-grafana-admin.sh $(oc whoami)
+----
++
+5. Now, access the Grafana console, create a dashboard named `Alvaro - Custom Overview` and edit is as you wish. Then, you can export it with:
++
+[source, bash]
+----
+./generate-dashboard-configmap-yaml.sh "Alvaro - Custom Overview"
+----
