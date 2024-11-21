@@ -96,6 +96,13 @@ After installing all the mandatory components for ZTP, it is also possible to en
 ----
 
 
+=== Ansible Automation Platform
+
+Part of the benefits of ZTP is the capability to run Ansible playbooks on AAP based on events of the synchronization. In this case, we are going to deploy AAP on OCP with the default configuration and we will include it in the process in the future. *No need to do anything, as it is installed using the main ArgoCD application*. Here some nice documentation to read:
+
+* AAP 2.5 docs: https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.5/html-single/installing_on_openshift_container_platform/index
+* Monitoring AAP on premise: https://developers.redhat.com/articles/2024/08/28/monitor-ansible-automation-platform-using-prometheus-node-exporter-and-grafana#procedure 
+
 
 == Sites Baremetal node installation
 
