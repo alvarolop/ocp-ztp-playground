@@ -82,6 +82,10 @@ echo -e "=    INSTALL ACMO     ="
 echo -e "=======================\n"
 
 oc apply -f rhacm-obs/mco-observability.yaml
+oc apply -f rhacm-obs/cm-observability-metrics-custom-allowlist.yaml
+
+echo -n "Waiting for Grafana route creation..." 
+until oc get route grafana -n $ACMO_NAMESPACE >/dev/null 2>&1; do echo -n "." && sleep 1; done; echo -n -e "  [OK]\n"
 
 GRAFANA_ROUTE=$(oc get routes grafana -n $ACMO_NAMESPACE --template="https://{{.spec.host}}") \
 envsubst < rhacm-obs/consolelink-open-cluster-management-observability-grafana.yaml | oc apply -f -

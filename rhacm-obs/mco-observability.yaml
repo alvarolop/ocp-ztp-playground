@@ -5,9 +5,9 @@ metadata:
   name: observability
 spec:
   # enableDownsampling: true
-  # observabilityAddonSpec:
-  #   enableMetrics: true
-  #   interval: 300
+  observabilityAddonSpec:
+    enableMetrics: true
+    interval: 300
   storageConfig:
     # alertmanagerStorageSize: 1Gi
     # compactStorageSize: 100Gi
