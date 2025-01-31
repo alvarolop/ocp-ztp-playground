@@ -7,9 +7,21 @@ metadata:
 data:
   metrics_list.yaml: |
     names: 
-      - node_memory_MemTotal_bytes
-      - tekton_pipelines_controller_pipelinerun_duration_seconds_bucket
+      - tekton_pipelines_controller_running_pipelineruns_count
       - tekton_pipelines_controller_running_taskruns_count
+      - tekton_pipelines_controller_pipelinerun_duration_seconds_count
+      - tekton_pipelines_controller_pipelinerun_count
+      - tekton_pipelines_controller_pipelinerun_duration_seconds_sum
+      - tekton_pipelines_controller_pipelinerun_taskrun_duration_seconds_sum
+      - tekton_pipelines_controller_pipelinerun_taskrun_duration_seconds_count
+      - tekton_pipelines_controller_pipelinerun_duration_seconds_bucket
+
+      - kube_pod_status_phase
+      - node_network_receive_bytes_total
+      - node_network_transmit_bytes_total
+      - node_disk_read_bytes_total
+      - node_disk_written_bytes_total
+      - node_disk_io_time_seconds_total
 
     # rules: 
     # - record: apiserver_request_duration_seconds:histogram_quantile_90
